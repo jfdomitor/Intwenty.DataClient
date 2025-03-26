@@ -11,7 +11,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
     {
         private static string CACHETYPE = "MARIADB_SQL";
 
-        public override string GetCreateTableSql(IntwentyDbTableDefinition model)
+        public override string GetCreateTableSql(DbTableDefinition model)
         {
             string result;
             var cachekey = CACHETYPE + "_CREATE_" + model.Id;
@@ -42,7 +42,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
             return result;
         }
 
-        public override string GetCreateIndexSql(IntwentyDbIndexDefinition model)
+        public override string GetCreateIndexSql(DbIndexDefinition model)
         {
             string result;
             var cachekey = CACHETYPE + "_CREATEINDEX_" + model.Id;
@@ -76,7 +76,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
             return result;
         }
 
-        public override string GetInsertSql<T>(IntwentyDbTableDefinition model, T instance, List<IntwentySqlParameter> parameters)
+        public override string GetInsertSql<T>(DbTableDefinition model, T instance, List<IntwentySqlParameter> parameters)
         {
             string result;
             var cachekey = CACHETYPE + "_INSERT_" + model.Id;
@@ -141,7 +141,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
             return result;
         }
 
-        public override string GetUpdateSql<T>(IntwentyDbTableDefinition model, T instance, List<IntwentySqlParameter> parameters, List<IntwentySqlParameter> keyparameters)
+        public override string GetUpdateSql<T>(DbTableDefinition model, T instance, List<IntwentySqlParameter> parameters, List<IntwentySqlParameter> keyparameters)
         {
             string result;
             var cachekey = CACHETYPE + "_UPDATE_" + model.Id;
@@ -228,7 +228,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
 
         }
 
-        public override string GetDeleteSql<T>(IntwentyDbTableDefinition model, T instance, List<IntwentySqlParameter> parameters)
+        public override string GetDeleteSql<T>(DbTableDefinition model, T instance, List<IntwentySqlParameter> parameters)
         {
             string result;
             var cachekey = CACHETYPE + "_DELETE_" + model.Id;
@@ -284,7 +284,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
         }
 
 
-        protected override string GetColumnDefinition(IntwentyDbColumnDefinition model)
+        protected override string GetColumnDefinition(DbColumnDefinition model)
         {
             var result = string.Empty;
             var allownullvalue = "NULL";
@@ -326,7 +326,7 @@ namespace Intwenty.DataClient.Databases.MariaDb
             return sqlstatement;
         }
 
-        public override string GetAlterTableAddColumnSql(IntwentyDbTableDefinition tablemodel, IntwentyDbColumnDefinition columnmodel)
+        public override string GetAlterTableAddColumnSql(DbTableDefinition tablemodel, DbColumnDefinition columnmodel)
         {
 
             var t = columnmodel.IsNullNotAllowed;

@@ -1,5 +1,6 @@
 ﻿using Intwenty.DataClient.Databases;
 using Intwenty.DataClient.Model;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
@@ -252,42 +253,7 @@ namespace Intwenty.DataClient
             return await InternalClient.GetEntitiesAsync<T>(sql, isprocedure, parameters);
         }
 
-        public IJsonObjectResult GetJsonObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return InternalClient.GetJsonObject(sql,isprocedure,parameters);
-        }
-
-        public async Task<IJsonObjectResult> GetJsonObjectAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return await InternalClient.GetJsonObjectAsync(sql, isprocedure, parameters);
-        }
-
-        public dynamic GetObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return InternalClient.GetObject(sql, isprocedure, parameters);
-        }
-        public async Task<dynamic> GetObjectAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return await InternalClient.GetObjectAsync(sql, isprocedure, parameters);
-        }
-        public IJsonArrayResult GetJsonArray(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return InternalClient.GetJsonArray(sql, isprocedure, parameters);
-        }
-        public async Task<IJsonArrayResult> GetJsonArrayAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return await InternalClient.GetJsonArrayAsync(sql, isprocedure, parameters);
-        }
-        public List<dynamic> GetObjects(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return InternalClient.GetObjects(sql, isprocedure, parameters);
-        }
-        public async Task<List<dynamic>> GetObjectsAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            return await InternalClient.GetObjectsAsync(sql, isprocedure, parameters);
-        }
-
-
+      
         public int InsertEntity<T>(T model)
         {
             return InternalClient.InsertEntity(model);
@@ -324,15 +290,6 @@ namespace Intwenty.DataClient
             return await InternalClient.DeleteEntityAsync(entity);
         }
 
-        public int DeleteEntities<T>(IEnumerable<T> entities)
-        {
-            return InternalClient.DeleteEntities(entities);
-        }
-        public async Task<int> DeleteEntitiesAsync<T>(IEnumerable<T> entities)
-        {
-            return await InternalClient.DeleteEntitiesAsync(entities);
-        }
-
         public IResultSet GetResultSet(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
         {
             return InternalClient.GetResultSet(sql, isprocedure, parameters);
@@ -352,6 +309,16 @@ namespace Intwenty.DataClient
             return await InternalClient.GetDataTableAsync(sql, isprocedure, parameters);
         }
 
+        public virtual JsonElement GetJsonArray(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+           return InternalClient.GetJsonArray(sql,isprocedure,parameters);
+        }
+
+        public virtual JsonElement GetJsonArray(string tablename)
+        {
+            return InternalClient.GetJsonArray(tablename);
+        }
+
         public List<TypeMapItem> GetDbTypeMap()
         {
             return TypeMap.GetTypeMap();
@@ -360,6 +327,121 @@ namespace Intwenty.DataClient
         public List<CommandMapItem> GetDbCommandMap()
         {
             return CommandMap.GetCommandMap();
+        }
+
+        public bool CreateTable(IIBasicDbTable model)
+        {
+            return InternalClient.CreateTable(model);
+        }
+
+        public Task<bool> CreateTableAsync(IIBasicDbTable model)
+        {
+            return InternalClient.CreateTableAsync(model);
+        }
+
+        public string GetCreateTableSqlStatement(IIBasicDbTable model)
+        {
+            return InternalClient.GetCreateTableSqlStatement(model);
+        }
+
+        public string GetInsertSqlStatement(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.GetInsertSqlStatement(model, data);
+        }
+
+        public string GetUpdateSqlStatement(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.GetUpdateSqlStatement(model, data);
+        }
+
+        public JsonElement GetEntity(IIBasicDbTable model, string id)
+        {
+            return InternalClient.GetEntity(model, id);
+        }
+
+        public Task<JsonElement> GetEntityAsync(IIBasicDbTable model, string id)
+        {
+            return InternalClient.GetEntityAsync(model, id);
+        }
+
+        public JsonElement GetEntity(IIBasicDbTable model, int id)
+        {
+            return InternalClient.GetEntity(model, id);
+        }
+
+        public Task<JsonElement> GetEntityAsync(IIBasicDbTable model, int id)
+        {
+            return InternalClient.GetEntityAsync(model, id);
+        }
+
+        public JsonElement GetEntity(string sql, bool isprocedure)
+        {
+            return InternalClient.GetEntity(sql, isprocedure);
+        }
+
+        public Task<JsonElement> GetEntityAsync(string sql, bool isprocedure)
+        {
+            return InternalClient.GetEntityAsync(sql, isprocedure);
+        }
+
+        public JsonElement GetEntity(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            return InternalClient.GetEntity(sql, isprocedure, parameters);
+        }
+
+        public Task<JsonElement> GetEntityAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            return InternalClient.GetEntityAsync(sql, isprocedure, parameters);
+        }
+
+        public Task<JsonElement> GetJsonArrayAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            return InternalClient.GetJsonArrayAsync(sql, isprocedure, parameters);
+        }
+
+        public Task<JsonElement> GetJsonArrayAsync(string tablename)
+        {
+            return InternalClient.GetJsonArrayAsync(tablename);
+        }
+
+        public int InsertEntity(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.InsertEntity(model, data);
+        }
+
+        public Task<int> InsertEntityAsync(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.InsertEntityAsync(model, data);
+        }
+
+        public bool UpdateEntity(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.UpdateEntity(model, data);
+        }
+
+        public Task<bool> UpdateEntityAsync(IIBasicDbTable model, JsonElement data)
+        {
+            return InternalClient.UpdateEntityAsync(model, data);
+        }
+
+        public bool DeleteEntity(IIBasicDbTable model, string id)
+        {
+            return InternalClient.DeleteEntity(model, id);
+        }
+
+        public Task<bool> DeleteEntityAsync(IIBasicDbTable model, string id)
+        {
+            return InternalClient.DeleteEntityAsync(model, id);
+        }
+
+        public bool DeleteEntity(IIBasicDbTable model, int id)
+        {
+            return InternalClient.DeleteEntity(model, id);
+        }
+
+        public Task<bool> DeleteEntityAsync(IIBasicDbTable model, int id)
+        {
+            return InternalClient.DeleteEntityAsync(model, id);
         }
     }
 
