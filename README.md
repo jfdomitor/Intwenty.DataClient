@@ -1,10 +1,16 @@
 ![alt text](https://github.com/Domitor/Intwenty/blob/master/IntwentyDemo/wwwroot/images/intwenty_loggo_small.png)
 
 # Intwenty.DataClient
-A .net core database client library that includes ORM functions, JSON support and more.
+A .net core database client library that includes ORM functions, JSON support and more. Perfect when you need to create or retrieve data and you don't want to work with strongly type objects. 
+
+Example:  
+* bool CreateTable(IIBasicDbTable model);
+* int InsertEntity(IIBasicDbTable model, JsonElement data);
+* JsonElement GetJsonArray(string tablename)
+
 
 ## Description
-Intwenty.DataClient is a laser fast database client library with a limited set of functions for object relational mapping and generating JSON directly from SQL query results. 
+Intwenty.DataClient is a laser fast database client library with a set of functions for object relational mapping and generating JSON directly from SQL query results. 
 
 ## Implementation
 Instead of extending the IDbConnection Intwenty.DataClient works as a generic abstraction layer and wraps around other libraries that implements IDbConnection and IDbCommand. All methods on the IDataClient interface that not explicitly takes an sql statment as parameter (GetEntity<T>, InsertEntity<T> etc) generates sql for all supported databases.
@@ -46,8 +52,11 @@ Intwenty.DataClient is built as a wrapper around popular client libraries for MS
      //Get a filtered list of person objects
      var persons = client.GetEntities<Person>("select * from person where id>@P1", new IIntwentySqlParameter[] {new IntwentySqlParameter("@P1", 1000) });
      
-      //Get persons as a json string
+    //Get persons as a json string
      var persons = client.GetJSONArry("select * from person");
+
+    //Get a json array
+    JsonElement res = dbclient.GetJsonArray("person");
   
     client.Close();
     
@@ -56,43 +65,114 @@ Intwenty.DataClient is built as a wrapper around popular client libraries for MS
 ## The IDataClient interface
 
     public interface IDataClient
-    {
-        DBMS Database { get; }
-        void Open();
-        void Close();
-        void BeginTransaction();
-        void CommitTransaction();
-        void RollbackTransaction();
-        void CreateTable<T>();
-        bool TableExists<T>();
-        bool TableExists(string tablename);
-        bool ColumnExists(string tablename, string columnname);
-        void RunCommand(string sql, bool isprocedure=false, IIntwentySqlParameter[] parameters=null);
-        object GetScalarValue(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        T GetEntity<T>(string id) where T : new();
-        T GetEntity<T>(int id) where T : new();
-        T GetEntity<T>(string sql, bool isprocedure) where T : new();
-        T GetEntity<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null) where T : new();
-        List<T> GetEntities<T>() where T : new();
-        List<T> GetEntities<T>(string sql, bool isprocedure=false) where T : new();
-        List<T> GetEntities<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters=null) where T : new();
-        IJsonObjectResult GetJsonObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        IJsonArrayResult GetJsonArray(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        dynamic GetObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        List<dynamic> GetObjects(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        IResultSet GetResultSet(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        DataTable GetDataTable(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
-        int InsertEntity<T>(T entity);
-        int InsertEntity(string json, string tablename);
-        int InsertEntity(JsonElement json, string tablename);
-        int UpdateEntity<T>(T entity);
-        int UpdateEntity(string json, string tablename);
-        int UpdateEntity(JsonElement json, string tablename);
-        int DeleteEntity<T>(T entity);
-        int DeleteEntities<T>(IEnumerable<T> entities);
-        List<TypeMapItem> GetDbTypeMap();
-        List<CommandMapItem> GetDbCommandMap();
-    }
+ {
+     DBMS Database { get; }
+     void Open();
+     Task OpenAsync();
+     void Close();
+     Task CloseAsync();
+     void BeginTransaction();
+     Task BeginTransactionAsync();
+     void CommitTransaction();
+     Task CommitTransactionAsync();
+     void RollbackTransaction();
+     Task RollbackTransactionAsync();
+     void CreateTable<T>();
+     Task CreateTableAsync<T>();
+     bool CreateTable(IIBasicDbTable model);
+     Task<bool> CreateTableAsync(IIBasicDbTable model);
+     void ModifyTable<T>();
+
+
+     string GetCreateTableSqlStatement<T>();
+     string GetInsertSqlStatement<T>(T entity);
+     string GetUpdateSqlStatement<T>(T entity);
+     string GetCreateTableSqlStatement(IIBasicDbTable model);
+     string GetInsertSqlStatement(IIBasicDbTable model, JsonElement data);
+     string GetUpdateSqlStatement(IIBasicDbTable model, JsonElement data);
+
+
+     bool TableExists<T>();
+     Task<bool> TableExistsAsync<T>();
+     bool TableExists(string tablename);
+     Task<bool> TableExistsAsync(string tablename);
+     bool ColumnExists(string tablename, string columnname);
+     Task<bool> ColumnExistsAsync(string tablename, string columnname);
+
+
+     void RunCommand(string sql, bool isprocedure=false, IIntwentySqlParameter[] parameters=null);
+     Task RunCommandAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+
+
+     object GetScalarValue(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+     Task<object> GetScalarValueAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+
+
+     T GetEntity<T>(string id) where T : new();
+     Task<T> GetEntityAsync<T>(string id) where T : new();
+     T GetEntity<T>(int id) where T : new();
+     Task<T> GetEntityAsync<T>(int id) where T : new();
+     T GetEntity<T>(string sql, bool isprocedure) where T : new();
+     Task<T> GetEntityAsync<T>(string sql, bool isprocedure) where T : new();
+     T GetEntity<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null) where T : new();
+     Task<T> GetEntityAsync<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null) where T : new();
+
+     JsonElement GetEntity(IIBasicDbTable model, string id);
+     Task<JsonElement> GetEntityAsync(IIBasicDbTable model, string id);
+     JsonElement GetEntity(IIBasicDbTable model, int id);
+     Task<JsonElement> GetEntityAsync(IIBasicDbTable model, int id);
+     JsonElement GetEntity(string sql, bool isprocedure);
+     Task<JsonElement> GetEntityAsync(string sql, bool isprocedure);
+     JsonElement GetEntity(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null);
+     Task<JsonElement> GetEntityAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null);
+
+     List<T> GetEntities<T>() where T : new();
+     Task<List<T>> GetEntitiesAsync<T>() where T : new();
+     List<T> GetEntities<T>(string sql, bool isprocedure=false) where T : new();
+     Task<List<T>> GetEntitiesAsync<T>(string sql, bool isprocedure = false) where T : new();
+     List<T> GetEntities<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters=null) where T : new();
+     Task<List<T>> GetEntitiesAsync<T>(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null) where T : new();
+     
+     JsonElement GetJsonArray(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null);
+     JsonElement GetJsonArray(string tablename);
+     Task<JsonElement> GetJsonArrayAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null);
+     Task<JsonElement> GetJsonArrayAsync(string tablename);
+
+
+
+
+
+
+     IResultSet GetResultSet(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+     Task<IResultSet> GetResultSetAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+     DataTable GetDataTable(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+     Task<DataTable> GetDataTableAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null);
+
+
+
+     int InsertEntity<T>(T entity);
+     Task<int> InsertEntityAsync<T>(T entity);
+     int InsertEntity(IIBasicDbTable model, JsonElement data);
+     Task<int> InsertEntityAsync(IIBasicDbTable model, JsonElement data);
+
+
+     int UpdateEntity<T>(T entity);
+     Task<int> UpdateEntityAsync<T>(T entity);
+     bool UpdateEntity(IIBasicDbTable model, JsonElement data);
+     Task<bool> UpdateEntityAsync(IIBasicDbTable model, JsonElement data);
+
+     int DeleteEntity<T>(T entity);
+     Task<int> DeleteEntityAsync<T>(T entity);
+
+     bool DeleteEntity(IIBasicDbTable model, string id);
+     Task<bool> DeleteEntityAsync(IIBasicDbTable model, string id);
+     bool DeleteEntity(IIBasicDbTable model, int id);
+     Task<bool> DeleteEntityAsync(IIBasicDbTable model, int id);
+
+
+     List<TypeMapItem> GetDbTypeMap();
+     List<CommandMapItem> GetDbCommandMap();
+ }
         
 ## Annotations
 Intwenty.DataClient uses it own set of annotations to support ORM functions
@@ -115,7 +195,6 @@ Intwenty.DataClient uses it own set of annotations to support ORM functions
           public int Col5 { get; set; }
        }
 
-## Json String Functions
-Except for the methods used for retrieving data as objects of type T, and dynamic, there is also the functions: GetJsonObject and GetJsonArray which returns objects including json strings constructed directly from the datareader of the underlying library.
+
 
 
