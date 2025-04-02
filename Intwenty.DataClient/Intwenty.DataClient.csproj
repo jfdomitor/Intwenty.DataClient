@@ -4,14 +4,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Johan Filipsson</Authors>
-    <Company>Domitor Consulting AB</Company>
+    <Company></Company>
     <Description>A .net core database client library that includes ORM functions, JSON support and more.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Domitor/Intwenty.DataClient</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/jfdomitor/Intwenty.DataClient</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Domitor/Intwenty.DataClient</RepositoryUrl>
     <PackageIcon>intwenty_loggo_small.png</PackageIcon>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <PackageReleaseNotes>Added feature: ModifyTable&lt;T&gt;, which creates a table if not existing or adds non existing columns to an existing table.</PackageReleaseNotes>
   </PropertyGroup>
 
