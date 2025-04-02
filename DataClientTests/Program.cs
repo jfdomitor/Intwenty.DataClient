@@ -79,18 +79,18 @@ namespace DataClientTests
 
                 var jsonarr = client.GetJsonArray("select id as \"Id\", name as \"Name\", testvalue as \"TestValue\" from DataClient_SyncTestTable");
 
-                var objlist = client.GetObjects("select * from DataClient_SyncTestTable");
-
                 var resultset = client.GetResultSet("select * from DataClient_SyncTestTable");
-
-                var json = client.GetJsonObject("select Name, TestValue from DataClient_SyncTestTable");
 
                 var typedresult = client.GetEntity<DataClientSyncTest>("select Name, TestValue from DataClient_SyncTestTable", false);
 
                 var typedresult2 = client.GetEntity<DataClientSyncTest>(t[5].Id);
 
                 tmpstart = DateTime.Now;
-                client.DeleteEntities(t);
+                foreach (var q in t)
+                {
+                    client.DeleteEntity(q);
+                }
+               
                 Console.WriteLine("Delete 5000 took: " + DateTime.Now.Subtract(tmpstart).TotalMilliseconds + " ms");
 
                 Console.WriteLine("Sync test lasted: " + DateTime.Now.Subtract(start).TotalMilliseconds + " ms");
@@ -151,18 +151,18 @@ namespace DataClientTests
 
                 var jsonarr = await client.GetJsonArrayAsync("select id as \"Id\", name as \"Name\", testvalue as \"TestValue\" from DataClient_AsyncTestTable");
 
-                var objlist = await client.GetObjectsAsync("select * from DataClient_AsyncTestTable");
-
                 var resultset = await client.GetResultSetAsync("select * from DataClient_AsyncTestTable");
-
-                var json = await client.GetJsonObjectAsync("select Name, TestValue from DataClient_AsyncTestTable");
 
                 var typedresult = await client.GetEntityAsync<DataClientAsyncTest>("select Name, TestValue from DataClient_AsyncTestTable", false);
 
                 var typedresult2 = await client.GetEntityAsync<DataClientAsyncTest>(t[5].Id);
 
                 tmpstart = DateTime.Now;
-                await client.DeleteEntitiesAsync(t);
+                foreach (var q in t)
+                {
+                    await client.DeleteEntityAsync(q);
+                }
+           
                 Console.WriteLine("Delete 5000 took: " + DateTime.Now.Subtract(tmpstart).TotalMilliseconds + " ms");
 
                 Console.WriteLine("Async test lasted: " + DateTime.Now.Subtract(start).TotalMilliseconds + " ms");
