@@ -1,6 +1,5 @@
 ﻿using Intwenty.DataClient.Databases;
 using Intwenty.DataClient.Model;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text.Json;
@@ -11,8 +10,7 @@ namespace Intwenty.DataClient
     public enum DBMS { MSSqlServer, MySql, MariaDB, PostgreSQL, SQLite };
 
 
-
-    public class Connection : IDataClient
+    public class DbConnection : IDataClient
     {
         public DBMS Database { get; }
 
@@ -20,7 +18,7 @@ namespace Intwenty.DataClient
 
         private IDataClient InternalClient { get; }
 
-        public Connection(DBMS database, string connectionstring)
+        public DbConnection(DBMS database, string connectionstring)
         {
             Database = database;
             ConnectionString = connectionstring;
@@ -40,7 +38,7 @@ namespace Intwenty.DataClient
 
         }
 
-        public Connection(DBMS database, string connectionstring, DataClientOptions options)
+        public DbConnection(DBMS database, string connectionstring, DataClientOptions options)
         {
             Database = database;
             ConnectionString = connectionstring;

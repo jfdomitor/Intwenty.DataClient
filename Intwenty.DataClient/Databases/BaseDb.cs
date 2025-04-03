@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.Eventing.Reader;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -1530,32 +1531,58 @@ namespace Intwenty.DataClient.Databases
                     dt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database);
 
 
-                if (c.DbColumnName.ToUpper() == model.PrimaryKeyColumn.DbColumnName.ToUpper() && c.IsAutoIncremental)
+                if (c.DbColumnName.ToUpper() == model.PrimaryKeyColumn.DbColumnName.ToUpper())
                 {
-                    if (Database == DBMS.MSSqlServer)
+                    if (c.IsAutoIncremental)
                     {
-                        var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MSSqlServer && p.Key == "AUTOINC");
-                        res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, autoinccmd.Command, "NOT NULL" });
+                        if (Database == DBMS.MSSqlServer)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MSSqlServer && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, autoinccmd.Command, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                        {
+                            is_mysql_forced_pk = true;
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MariaDB && p.Key == "AUTOINC");
+                            res += string.Format("`{0}` {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
+                        }
+                        else if (Database == DBMS.SQLite)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.SQLite && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
+                        }
+                        else if (Database == DBMS.PostgreSQL)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.PostgreSQL && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, autoinccmd.Command, "NOT NULL" });
+                        }
+                        else
+                        {
+                            res += sep + string.Format("{0} {1} NOT NULL", c.DbColumnName, dt.DBMSDataType);
+                        }
                     }
-                    else if (Database == DBMS.MariaDB || Database == DBMS.MySql)
-                    {
-                        is_mysql_forced_pk = true;
-                        var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MariaDB && p.Key == "AUTOINC");
-                        res += string.Format("`{0}` {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
-                    }
-                    else if (Database == DBMS.SQLite)
-                    {
-                        var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.SQLite && p.Key == "AUTOINC");
-                        res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
-                    }
-                    else if (Database == DBMS.PostgreSQL)
-                    {
-                        var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.PostgreSQL && p.Key == "AUTOINC");
-                        res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, autoinccmd.Command, "NOT NULL" });
-                    }
-                    else
-                    {
-                        res += sep + string.Format("{0} {1} NOT NULL", c.DbColumnName, dt.DBMSDataType);
+                    else {
+                        if (Database == DBMS.MSSqlServer)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                        {
+                            is_mysql_forced_pk = true;
+                            res += string.Format("`{0}` {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.SQLite)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.PostgreSQL)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else
+                        {
+                            res += sep + string.Format("{0} {1} NOT NULL", c.DbColumnName, dt.DBMSDataType);
+                        }
                     }
                 }
 
@@ -1803,22 +1830,22 @@ namespace Intwenty.DataClient.Databases
 
 
             RunCommand(sql_insert.ToString(), parameters: parameters.ToArray());
-            if (Database == DBMS.MSSqlServer)
+            if (Database == DBMS.MSSqlServer && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
             {
                 return Convert.ToInt32(GetScalarValue("SELECT @@IDENTITY"));
             }
 
-            if (Database == DBMS.SQLite)
+            if (Database == DBMS.SQLite && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
             {
                 return Convert.ToInt32(GetScalarValue("SELECT Last_Insert_Rowid()"));
             }
 
-            if (Database == DBMS.PostgreSQL)
+            if (Database == DBMS.PostgreSQL && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
             {
                 return Convert.ToInt32(GetScalarValue(string.Format("SELECT currval('{0}')", model.DbTableName.ToLower() + "_id_seq")));
             }
 
-            if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+            if ((Database == DBMS.MariaDB || Database == DBMS.MySql) && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
             {
                 return Convert.ToInt32(GetScalarValue("SELECT LAST_INSERT_ID()"));
             }
@@ -1953,7 +1980,10 @@ namespace Intwenty.DataClient.Databases
                 else
                 {
                     if (modelcolumn.IsPrimaryKey)
+                    {
                         pk = t;
+                        continue;
+                    }
 
                     sql_update.Append(sep + modelcolumn.DbColumnName + "=@" + modelcolumn.DbColumnName);
                     if (modelcolumn.DataType == IntwentyDataType.Text || modelcolumn.DataType == IntwentyDataType.String)
