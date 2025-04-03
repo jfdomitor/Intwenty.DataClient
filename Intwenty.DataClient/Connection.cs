@@ -329,47 +329,47 @@ namespace Intwenty.DataClient
             return CommandMap.GetCommandMap();
         }
 
-        public bool CreateTable(IIBasicDbTable model)
+        public bool CreateTable(IBasicDbTable model)
         {
             return InternalClient.CreateTable(model);
         }
 
-        public Task<bool> CreateTableAsync(IIBasicDbTable model)
+        public Task<bool> CreateTableAsync(IBasicDbTable model)
         {
             return InternalClient.CreateTableAsync(model);
         }
 
-        public string GetCreateTableSqlStatement(IIBasicDbTable model)
+        public string GetCreateTableSqlStatement(IBasicDbTable model)
         {
             return InternalClient.GetCreateTableSqlStatement(model);
         }
 
-        public string GetInsertSqlStatement(IIBasicDbTable model, JsonElement data)
+        public string GetInsertSqlStatement(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.GetInsertSqlStatement(model, data);
         }
 
-        public string GetUpdateSqlStatement(IIBasicDbTable model, JsonElement data)
+        public string GetUpdateSqlStatement(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.GetUpdateSqlStatement(model, data);
         }
 
-        public JsonElement GetEntity(IIBasicDbTable model, string id)
+        public JsonElement GetEntity(IBasicDbTable model, string id)
         {
             return InternalClient.GetEntity(model, id);
         }
 
-        public Task<JsonElement> GetEntityAsync(IIBasicDbTable model, string id)
+        public Task<JsonElement> GetEntityAsync(IBasicDbTable model, string id)
         {
             return InternalClient.GetEntityAsync(model, id);
         }
 
-        public JsonElement GetEntity(IIBasicDbTable model, int id)
+        public JsonElement GetEntity(IBasicDbTable model, int id)
         {
             return InternalClient.GetEntity(model, id);
         }
 
-        public Task<JsonElement> GetEntityAsync(IIBasicDbTable model, int id)
+        public Task<JsonElement> GetEntityAsync(IBasicDbTable model, int id)
         {
             return InternalClient.GetEntityAsync(model, id);
         }
@@ -404,42 +404,42 @@ namespace Intwenty.DataClient
             return InternalClient.GetJsonArrayAsync(tablename);
         }
 
-        public int InsertEntity(IIBasicDbTable model, JsonElement data)
+        public int InsertEntity(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.InsertEntity(model, data);
         }
 
-        public Task<int> InsertEntityAsync(IIBasicDbTable model, JsonElement data)
+        public Task<int> InsertEntityAsync(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.InsertEntityAsync(model, data);
         }
 
-        public bool UpdateEntity(IIBasicDbTable model, JsonElement data)
+        public bool UpdateEntity(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.UpdateEntity(model, data);
         }
 
-        public Task<bool> UpdateEntityAsync(IIBasicDbTable model, JsonElement data)
+        public Task<bool> UpdateEntityAsync(IBasicDbTable model, JsonElement data)
         {
             return InternalClient.UpdateEntityAsync(model, data);
         }
 
-        public bool DeleteEntity(IIBasicDbTable model, string id)
+        public bool DeleteEntity(IBasicDbTable model, string id)
         {
             return InternalClient.DeleteEntity(model, id);
         }
 
-        public Task<bool> DeleteEntityAsync(IIBasicDbTable model, string id)
+        public Task<bool> DeleteEntityAsync(IBasicDbTable model, string id)
         {
             return InternalClient.DeleteEntityAsync(model, id);
         }
 
-        public bool DeleteEntity(IIBasicDbTable model, int id)
+        public bool DeleteEntity(IBasicDbTable model, int id)
         {
             return InternalClient.DeleteEntity(model, id);
         }
 
-        public Task<bool> DeleteEntityAsync(IIBasicDbTable model, int id)
+        public Task<bool> DeleteEntityAsync(IBasicDbTable model, int id)
         {
             return InternalClient.DeleteEntityAsync(model, id);
         }
