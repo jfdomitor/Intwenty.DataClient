@@ -180,4 +180,4 @@ Intwenty.DataClient uses it own set of annotations to support ORM functions
         
           [Ignore]
           public int Col5 { get; set; }
-       }
+        }
