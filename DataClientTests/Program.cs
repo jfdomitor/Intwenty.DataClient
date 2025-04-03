@@ -1,11 +1,8 @@
 ﻿using Intwenty.DataClient;
 using Intwenty.DataClient.Model;
 using Intwenty.DataClient.Reflection;
-using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.Design;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -24,7 +21,6 @@ namespace DataClientTests
             await RunAsynchTest();
             Console.WriteLine("Tests finnished");
             Console.ReadLine();
-
         }
 
 
