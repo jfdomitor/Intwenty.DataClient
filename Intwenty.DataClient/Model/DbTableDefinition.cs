@@ -5,7 +5,9 @@ using System.Text;
 
 namespace Intwenty.DataClient.Model
 {
-    sealed class IntwentyDbTableDefinition : DbBaseDefinition
+
+  
+    sealed class DbTableDefinition : DbBaseDefinition
     {
        
 
@@ -21,9 +23,9 @@ namespace Intwenty.DataClient.Model
 
         public List<string> PrimaryKeyColumnNamesList { get; private set; }
 
-        public List<IntwentyDbIndexDefinition> Indexes { get; set; }
+        public List<DbIndexDefinition> Indexes { get; set; }
 
-        public List<IntwentyDbColumnDefinition> Columns { get; set; }
+        public List<DbColumnDefinition> Columns { get; set; }
 
         public bool HasPrimaryKeyColumn { get { return PrimaryKeyColumnNamesList.Count > 0; } }
 
@@ -32,11 +34,11 @@ namespace Intwenty.DataClient.Model
         private string pkcolnames { get; set; }
 
 
-        public IntwentyDbTableDefinition()
+        public DbTableDefinition()
         {
 
-            Columns = new List<IntwentyDbColumnDefinition>();
-            Indexes = new List<IntwentyDbIndexDefinition>();
+            Columns = new List<DbColumnDefinition>();
+            Indexes = new List<DbIndexDefinition>();
             pkcolnames = string.Empty;
             PrimaryKeyColumnNamesList = new List<string>();
         }

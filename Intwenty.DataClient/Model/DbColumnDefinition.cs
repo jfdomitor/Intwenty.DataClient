@@ -5,20 +5,16 @@ using System.Text;
 
 namespace Intwenty.DataClient.Model
 {
-    sealed class IntwentyDbColumnDefinition : DbBaseDefinition
+    sealed class DbColumnDefinition : DbBaseDefinition
     {
 
         public bool IsPrimaryKeyColumn { get; set; }
-
-        public bool IsIndexColumn { get; set; }
 
         public bool IsAutoIncremental { get; set; }
 
         public bool IsNullNotAllowed { get; set; }
 
         public PropertyInfo Property { get; set; }
-
-        public bool IsInQueryResult { get; set; }
 
         public string GetNetType()
         {

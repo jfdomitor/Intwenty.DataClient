@@ -5,6 +5,19 @@ using System.Text;
 
 namespace Intwenty.DataClient.Model
 {
+    public enum IntwentyDataType
+    {
+        Bool = 0
+      , String = 1
+      , Text = 2
+      , Int = 3
+      , DateTime = 4
+      , OneDecimal = 5
+      , TwoDecimal = 6
+      , ThreeDecimal = 7
+      , Blob = 8
+    }
+
     public enum StringLength { Standard, Long, Short };
 
     public class TypeMapItem
@@ -13,7 +26,7 @@ namespace Intwenty.DataClient.Model
 
         public string NetType { get; set; }
 
-        public string IntwentyType { get; set; }
+        public IntwentyDataType IntwentyType { get; set; }
 
         public DbType DataDbType { get; set; }
 

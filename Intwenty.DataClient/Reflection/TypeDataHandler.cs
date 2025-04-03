@@ -9,20 +9,20 @@ namespace Intwenty.DataClient.Reflection
     static class TypeDataHandler
     {
 
-        public static IntwentyDbTableDefinition GetDbTableDefinition<T>()
+        public static DbTableDefinition GetDbTableDefinition<T>()
         {
 
             var currenttype = typeof(T);
             var key = currenttype.Name.ToUpper();
 
             var cache = MemoryCache.Default;
-            IntwentyDbTableDefinition result = cache.Get(key) as IntwentyDbTableDefinition;
+            DbTableDefinition result = cache.Get(key) as DbTableDefinition;
             if (result != null)
             {
                  return result;
             }
 
-            result = new IntwentyDbTableDefinition() { Id = key, Name = currenttype.Name };
+            result = new DbTableDefinition() { Id = key, Name = currenttype.Name };
 
             var tablename = currenttype.GetCustomAttributes(typeof(DbTableName), false);
             if (tablename != null && tablename.Length > 0)
@@ -40,7 +40,7 @@ namespace Intwenty.DataClient.Reflection
                 {
                     idxcnt++;
                     var idx = (DbTableIndex)a;
-                    var tblindex = new IntwentyDbIndexDefinition() { Id = idx.Name, Name = idx.Name, ColumnNames = idx.Columns, IsUnique = idx.IsUnique, Index = idxcnt, TableName = result.Name };
+                    var tblindex = new DbIndexDefinition() { Id = idx.Name, Name = idx.Name, ColumnNames = idx.Columns, IsUnique = idx.IsUnique, Index = idxcnt, TableName = result.Name };
                     result.Indexes.Add(tblindex);
                 }
             }
@@ -63,7 +63,7 @@ namespace Intwenty.DataClient.Reflection
 
 
                 colindex++;
-                var column = new IntwentyDbColumnDefinition() { Id=membername,  Name = membername, Property = property, Index = colindex };
+                var column = new DbColumnDefinition() { Id=membername,  Name = membername, Property = property, Index = colindex };
 
                 var autoinc = property.GetCustomAttributes(typeof(AutoIncrement), false);
                 if (autoinc != null && autoinc.Length > 0)

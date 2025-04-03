@@ -2,13 +2,17 @@
 using Intwenty.DataClient.Reflection;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.Eventing.Reader;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Npgsql.Replication.PgOutput.Messages.RelationMessage;
 
 namespace Intwenty.DataClient.Databases
 {
@@ -182,271 +186,7 @@ namespace Intwenty.DataClient.Databases
             return res;
         }
 
-        public virtual dynamic GetObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            object result = null;
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = GetCommand())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    result = GetObject(reader);
-                    break;
-                }
-
-                reader.Close();
-                reader.Dispose();
-            }
-
-            return result;
-        }
-
-        public virtual async Task<dynamic> GetObjectAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            object result = null;
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = await GetCommandAsync())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    result = GetObject(reader);
-                    break;
-                }
-
-                await reader.CloseAsync();
-                await reader.DisposeAsync();
-            }
-
-            return result;
-        }
-
-        public virtual IJsonObjectResult GetJsonObject(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            JsonObjectResult result = null;
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = GetCommand())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    result = GetJsonObjectResult(reader);
-                    break;
-                }
-
-                reader.Close();
-                reader.Dispose();
-
-            }
-
-            if (result == null)
-                result = new JsonObjectResult();
-
-
-            return result;
-        }
-
-        public virtual async Task<IJsonObjectResult> GetJsonObjectAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            JsonObjectResult result = null;
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = await GetCommandAsync())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    result = GetJsonObjectResult(reader);
-                    break;
-                }
-
-                await reader.CloseAsync();
-                await reader.DisposeAsync();
-
-            }
-
-            if (result == null)
-                result = new JsonObjectResult();
-
-
-            return result;
-        }
-
-        public virtual List<dynamic> GetObjects(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            var res = new List<dynamic>();
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = GetCommand())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    res.Add(GetObject(reader));
-                }
-
-                reader.Close();
-                reader.Dispose();
-            }
-
-            return res;
-        }
-
-        public virtual async Task<List<dynamic>> GetObjectsAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            var res = new List<dynamic>();
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = await GetCommandAsync())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    res.Add(GetObject(reader));
-                }
-
-                await reader.CloseAsync();
-                await reader.DisposeAsync();
-            }
-
-            return res;
-        }
-
-        public virtual IJsonArrayResult GetJsonArray(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            var start = DateTime.Now;
-            var result = new JsonArrayResult();
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = GetCommand())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    result.JsonObjects.Add(GetJsonObjectResult(reader));
-
-                }
-
-                reader.Close();
-                reader.Dispose();
-
-            }
-            result.Duration = DateTime.Now.Subtract(start).TotalMilliseconds;
-            result.ObjectCount = result.JsonObjects.Count;
-
-
-            return result;
-        }
-
-        public virtual async Task<IJsonArrayResult> GetJsonArrayAsync(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
-        {
-            var start = DateTime.Now;
-            var result = new JsonArrayResult();
-
-            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
-
-            using (var command = await GetCommandAsync())
-            {
-                command.CommandText = sqlstmt;
-                if (isprocedure)
-                    command.CommandType = CommandType.StoredProcedure;
-                else
-                    command.CommandType = CommandType.Text;
-
-                AddCommandParameters(parameters, command);
-
-                var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    result.JsonObjects.Add(GetJsonObjectResult(reader));
-
-                }
-
-                await reader.CloseAsync();
-                await reader.DisposeAsync();
-
-            }
-            result.Duration = DateTime.Now.Subtract(start).TotalMilliseconds;
-            result.ObjectCount = result.JsonObjects.Count;
-
-
-            return result;
-        }
+      
 
         public virtual IResultSet GetResultSet(string sql, bool isprocedure = false, IIntwentySqlParameter[] parameters = null)
         {
@@ -594,6 +334,7 @@ namespace Intwenty.DataClient.Databases
             return table;
         }
 
+       
         public virtual void CreateTable<T>()
         {
             var info = TypeDataHandler.GetDbTableDefinition<T>();
@@ -646,6 +387,63 @@ namespace Intwenty.DataClient.Databases
             }
 
 
+        }
+
+        public bool CreateTable(IBasicDbTable model)
+        {
+          
+             if (model == null)
+                 return false;
+
+            if (TableExists(model.DbTableName))
+            {
+                return true;
+            }
+            else
+            {
+                var tablesql = GetCreateTableSqlStatement(model);
+                RunCommand(tablesql);
+                foreach (var c in model.DataColumns)
+                {
+                    var colexist = ColumnExists(model.DbTableName, c.DbColumnName);
+                    if (!colexist)
+                    {
+                        var coldt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database);
+                        string columnsql = "ALTER TABLE " + model.DbTableName + " ADD " + c.DbColumnName + " " + coldt.DBMSDataType;
+                        RunCommand(columnsql);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> CreateTableAsync(IBasicDbTable model)
+        {
+            if (model == null)
+                return false;
+
+            if (TableExists(model.DbTableName))
+            {
+                return true;
+            }
+            else
+            {
+                var tablesql = GetCreateTableSqlStatement(model);
+                await RunCommandAsync(tablesql);
+                foreach (var c in model.DataColumns)
+                {
+                    var colexist = await ColumnExistsAsync(model.DbTableName, c.DbColumnName);
+                    if (!colexist)
+                    {
+                        var coldt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database);
+                        string columnsql = "ALTER TABLE " + model.DbTableName + " ADD " + c.DbColumnName + " " + coldt.DBMSDataType;
+                        await RunCommandAsync(columnsql);
+                    }
+                }
+            }
+
+            return true;
         }
 
         public virtual string GetCreateTableSqlStatement<T>()
@@ -806,7 +604,7 @@ namespace Intwenty.DataClient.Databases
 
                         var col = info.Columns.Find(p => p.Name.ToUpper() == reader.GetName(i).ToUpper());
                         if (col != null)
-                            SetPropertyValues(reader, new KeyValuePair<int, IntwentyDbColumnDefinition>(i, col), res);
+                            SetPropertyValues(reader, new KeyValuePair<int, DbColumnDefinition>(i, col), res);
                     }
 
                     break;
@@ -850,7 +648,7 @@ namespace Intwenty.DataClient.Databases
 
                         var col = info.Columns.Find(p => p.Name.ToUpper() == reader.GetName(i).ToUpper());
                         if (col != null)
-                            SetPropertyValues(reader, new KeyValuePair<int, IntwentyDbColumnDefinition>(i, col), res);
+                            SetPropertyValues(reader, new KeyValuePair<int, DbColumnDefinition>(i, col), res);
                     }
 
                     break;
@@ -904,7 +702,7 @@ namespace Intwenty.DataClient.Databases
 
                         var col = info.Columns.Find(p => p.Name.ToUpper() == reader.GetName(i).ToUpper());
                         if (col!=null)
-                            SetPropertyValues(reader, new KeyValuePair<int, IntwentyDbColumnDefinition>(i, col), res);
+                            SetPropertyValues(reader, new KeyValuePair<int, DbColumnDefinition>(i, col), res);
                     }
 
                     break;
@@ -947,7 +745,7 @@ namespace Intwenty.DataClient.Databases
 
                         var col = info.Columns.Find(p => p.Name.ToUpper() == reader.GetName(i).ToUpper());
                         if (col != null)
-                            SetPropertyValues(reader, new KeyValuePair<int, IntwentyDbColumnDefinition>(i, col), res);
+                            SetPropertyValues(reader, new KeyValuePair<int, DbColumnDefinition>(i, col), res);
                     }
 
                     break;
@@ -966,7 +764,7 @@ namespace Intwenty.DataClient.Databases
         {
             var res = new List<T>();
             var info = TypeDataHandler.GetDbTableDefinition<T>();
-            var readercolumns = new Dictionary<int,IntwentyDbColumnDefinition>();
+            var readercolumns = new Dictionary<int,DbColumnDefinition>();
 
             using (var command = GetCommand())
             {
@@ -1013,7 +811,7 @@ namespace Intwenty.DataClient.Databases
         {
             var res = new List<T>();
             var info = TypeDataHandler.GetDbTableDefinition<T>();
-            var readercolumns = new Dictionary<int, IntwentyDbColumnDefinition>();
+            var readercolumns = new Dictionary<int, DbColumnDefinition>();
 
             using (var command = await GetCommandAsync())
             {
@@ -1071,7 +869,7 @@ namespace Intwenty.DataClient.Databases
 
             var res = new List<T>();
             var info = TypeDataHandler.GetDbTableDefinition<T>();
-            var readercolumns = new Dictionary<int, IntwentyDbColumnDefinition>();
+            var readercolumns = new Dictionary<int, DbColumnDefinition>();
 
             var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
 
@@ -1125,7 +923,7 @@ namespace Intwenty.DataClient.Databases
 
             var res = new List<T>();
             var info = TypeDataHandler.GetDbTableDefinition<T>();
-            var readercolumns = new Dictionary<int, IntwentyDbColumnDefinition>();
+            var readercolumns = new Dictionary<int, DbColumnDefinition>();
 
             var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
 
@@ -1446,7 +1244,112 @@ namespace Intwenty.DataClient.Databases
 
             return query.ToString();
 
+        }
 
+        public virtual string GetUpdateSqlStatement(IBasicDbTable model, JsonElement data)
+        {
+            if (model == null)
+                return "";
+
+            var separator = "";
+            var keyparameters = new List<IntwentySqlParameter>();
+            var query = new StringBuilder(string.Format("UPDATE {0} SET ", model.DbTableName));
+
+            foreach (var col in model.DataColumns)
+            {
+
+                JsonElement value;
+                if (!data.TryGetProperty(col.DbColumnName, out value))
+                    continue;
+
+                var strvalue = "";
+                if (value.ValueKind == JsonValueKind.Null || value.ValueKind == JsonValueKind.Undefined)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (!keyparameters.Exists(p => p.Name == col.DbColumnName) && col.IsAutoIncremental)
+                        keyparameters.Add(new IntwentySqlParameter() { Name = col.DbColumnName, Value = value, DataType = DbType.Int32 });
+                    else if (!keyparameters.Exists(p => p.Name == col.DbColumnName) && col.IsPrimaryKey && (col.DataType == IntwentyDataType.String))
+                        keyparameters.Add(new IntwentySqlParameter() { Name = col.DbColumnName, Value = value, DataType = DbType.String });
+                    else if (!keyparameters.Exists(p => p.Name == col.DbColumnName)  && col.IsPrimaryKey && (col.DataType == IntwentyDataType.Bool))
+                        keyparameters.Add(new IntwentySqlParameter() { Name = col.DbColumnName, Value = value, DataType = DbType.Boolean });
+                    else if (!keyparameters.Exists(p => p.Name == col.DbColumnName)  && col.IsPrimaryKey && (col.DataType == IntwentyDataType.DateTime))
+                        keyparameters.Add(new IntwentySqlParameter() { Name = col.DbColumnName, Value = value, DataType = DbType.DateTime });
+                    else if (!keyparameters.Exists(p => p.Name == col.DbColumnName) && col.IsPrimaryKey)
+                        keyparameters.Add(new IntwentySqlParameter() { Name = col.DbColumnName, Value = value, DataType = DbType.Int32 });
+
+                    if (keyparameters.Exists(p => p.Name == col.DbColumnName))
+                        continue;
+
+                    if (col.DataType == IntwentyDataType.String)
+                        strvalue = "'" + Convert.ToString(value) + "'";
+                    else if (col.DataType == IntwentyDataType.DateTime)
+                        strvalue = "'" + Convert.ToDateTime(value).ToString("yyyy-MM-dd HH:mm:ss") + "'";
+                    //else if (value.IsDateTimeOffset)
+                    //    strvalue = "'" + ((DateTimeOffset)value).DateTime.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+                    else if (col.DataType == IntwentyDataType.Bool)
+                    {
+                        if (Convert.ToBoolean(value))
+                            strvalue = "1";
+                        else
+                            strvalue = "0";
+                    }
+                    else
+                        strvalue = Convert.ToString(value).Replace(",", ".");
+
+                }
+
+                if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                    query.Append(separator + string.Format("`{0}`={1}", col.DbColumnName, strvalue));
+                else
+                    query.Append(separator + string.Format("`{0}`={1}", col.DbColumnName, strvalue));
+
+                separator = ", ";
+            }
+
+            if (keyparameters.Count == 0)
+                return "";
+
+
+            query.Append(" WHERE ");
+            var wheresep = "";
+            foreach (var p in keyparameters)
+            {
+                var strvalue = "";
+
+                if (p.Value == null)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (p.DataType == DbType.String)
+                        strvalue = "'" + Convert.ToString(p.Value) + "'";
+                    else if (p.DataType == DbType.DateTime)
+                        strvalue = "'" + Convert.ToDateTime(p.Value).ToString("yyyy-MM-dd HH:mm:ss") + "'";
+                    else if (p.DataType == DbType.Boolean)
+                    {
+                        if (Convert.ToBoolean(p.Value))
+                            strvalue = "1";
+                        else
+                            strvalue = "0";
+                    }
+                    else
+                        strvalue = Convert.ToString(p.Value).Replace(",", ".");
+                }
+
+
+                if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                    query.Append(wheresep + string.Format("`{0}`={1}", p.Name, strvalue));
+                else
+                    query.Append(wheresep + string.Format("{0}={1}", p.Name, strvalue));
+
+                wheresep = " AND ";
+            }
+
+            return query.ToString();
         }
 
         public virtual int DeleteEntities<T>(IEnumerable<T> entities)
@@ -1531,7 +1434,7 @@ namespace Intwenty.DataClient.Databases
 
 
 
-        protected virtual void SetPropertyValues<T>(IDataReader reader, KeyValuePair<int,IntwentyDbColumnDefinition> column, T instance)
+        protected virtual void SetPropertyValues<T>(IDataReader reader, KeyValuePair<int,DbColumnDefinition> column, T instance)
         {
 
             if (column.Value.IsInt32)
@@ -1559,7 +1462,7 @@ namespace Intwenty.DataClient.Databases
         protected abstract void AddCommandParameters(IIntwentySqlParameter[] parameters, IDbCommand command);
             
 
-        protected abstract void InferAutoIncrementalValue<T>(IntwentyDbTableDefinition info, List<IntwentySqlParameter> parameters, T entity, IDbCommand command);
+        protected abstract void InferAutoIncrementalValue<T>(DbTableDefinition info, List<IntwentySqlParameter> parameters, T entity, IDbCommand command);
 
         protected string GetJSONValue(IDataReader reader, int index)
         {
@@ -1611,67 +1514,910 @@ namespace Intwenty.DataClient.Databases
             return false;
         }
 
-        private string GetJSONNullValue(string name)
+        public virtual string GetCreateTableSqlStatement(IBasicDbTable model)
         {
-            return "\"" + name + "\":null";
+            var res = string.Format("CREATE TABLE {0}", model.DbTableName) + " (";
+            var sep = "";
+            var is_mysql_forced_pk = false;
+
+            foreach (var c in model.DataColumns)
+            {
+                TypeMapItem dt;
+                if (c.DataType == IntwentyDataType.String)
+                    dt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database && p.Length == StringLength.Short);
+                else if (c.DataType == IntwentyDataType.Text)
+                    dt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database && p.Length == StringLength.Long);
+                else
+                    dt = GetDbTypeMap().Find(p => p.IntwentyType == c.DataType && p.DbEngine == Database);
+
+
+                if (c.DbColumnName.ToUpper() == model.PrimaryKeyColumn.DbColumnName.ToUpper())
+                {
+                    if (c.IsAutoIncremental)
+                    {
+                        if (Database == DBMS.MSSqlServer)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MSSqlServer && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, autoinccmd.Command, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                        {
+                            is_mysql_forced_pk = true;
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.MariaDB && p.Key == "AUTOINC");
+                            res += string.Format("`{0}` {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
+                        }
+                        else if (Database == DBMS.SQLite)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.SQLite && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2} {3}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL", autoinccmd.Command });
+                        }
+                        else if (Database == DBMS.PostgreSQL)
+                        {
+                            var autoinccmd = GetDbCommandMap().Find(p => p.DbEngine == DBMS.PostgreSQL && p.Key == "AUTOINC");
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, autoinccmd.Command, "NOT NULL" });
+                        }
+                        else
+                        {
+                            res += sep + string.Format("{0} {1} NOT NULL", c.DbColumnName, dt.DBMSDataType);
+                        }
+                    }
+                    else {
+                        if (Database == DBMS.MSSqlServer)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                        {
+                            is_mysql_forced_pk = true;
+                            res += string.Format("`{0}` {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.SQLite)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else if (Database == DBMS.PostgreSQL)
+                        {
+                            res += string.Format("{0} {1} {2}", new object[] { c.DbColumnName, dt.DBMSDataType, "NOT NULL" });
+                        }
+                        else
+                        {
+                            res += sep + string.Format("{0} {1} NOT NULL", c.DbColumnName, dt.DBMSDataType);
+                        }
+                    }
+                }
+
+                sep = ", ";
+            }
+
+            if (is_mysql_forced_pk)
+            {
+                res += sep + "PRIMARY KEY ("+model.PrimaryKeyColumn.DbColumnName+")";
+            }
+
+            res += ")";
+
+            return res;
         }
 
-        private JsonObjectResult GetJsonObjectResult(IDataReader openreader)
+        public virtual string GetInsertSqlStatement(IBasicDbTable model, JsonElement data)
         {
-            var result = new JsonObjectResult();
-            var sb = new StringBuilder();
-            var separator = ' ';
-            sb.Append("{");
+          
+            var separator = "";
+            var query = new StringBuilder(string.Format("INSERT INTO {0} (", model.DbTableName));
+            var values = new StringBuilder(" VALUES (");
 
-            for (int i = 0; i < openreader.FieldCount; i++)
+            foreach (var col in model.DataColumns)
             {
-                result.Values.Add(new ResultSetValue() { Name = openreader.GetName(i), Value = openreader.GetValue(i) });
-
-                if (openreader.IsDBNull(i) && Options.JsonNullValueHandling == JsonNullValueMode.Exclude)
+                if (col.IsAutoIncremental)
                     continue;
 
-                if (openreader.IsDBNull(i))
+                JsonElement value;
+                if (!data.TryGetProperty(col.DbColumnName, out value))
+                    continue;
+
+                var strvalue = "";
+                if (value.ValueKind ==  JsonValueKind.Null || value.ValueKind == JsonValueKind.Undefined)
                 {
-                    sb.Append(separator + GetJSONNullValue(openreader.GetName(i)));
+                    continue;
                 }
                 else
                 {
-                    sb.Append(separator + GetJSONValue(openreader,i));
+                    TypeMapItem dt = GetDbTypeMap().Find(p => p.IntwentyType == col.DataType && p.DbEngine == Database);
+                    if (col.DataType == IntwentyDataType.String || col.DataType == IntwentyDataType.Text)
+                        strvalue = "'" + Convert.ToString(value.GetString()) + "'";
+                    else if (col.DataType == IntwentyDataType.DateTime)
+                        strvalue = "'" + Convert.ToDateTime(value.GetString()).ToString("yyyy-MM-dd HH:mm:ss") + "'";
+                    else if (dt.NetType == "SYSTEM.DATETIMEOFFSET")
+                        strvalue = "'" + value.GetDateTimeOffset().DateTime.ToString("yyyy-MM-dd HH:mm:ss") + "'";
+                    else if (col.DataType == IntwentyDataType.Bool)
+                    {
+                        if (Convert.ToBoolean(value))
+                            strvalue = "1";
+                        else
+                            strvalue = "0";
+                    }
+                    else
+                        strvalue = Convert.ToString(value).Replace(",", ".");
                 }
-                separator = ',';
-            }
-            sb.Append("}");       
-            result.SetData(sb.ToString());
-            return result;
 
+                if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+                    query.Append(string.Format("{0}`{1}`", separator, col.DbColumnName));
+                else
+                    query.Append(string.Format("{0}{1}", separator, col.DbColumnName));
+
+                values.Append(string.Format("{0}{1}", separator, strvalue));
+                separator = ",";
+
+            }
+            query.Append(") ");
+            values.Append(")");
+
+            return query.Append(values).ToString();
         }
 
-        private dynamic GetObject(IDataReader openreader)
-        {
-            var result = new ExpandoObject() as IDictionary<string, object>;
+      
 
-            for (int i = 0; i < openreader.FieldCount; i++)
+        public virtual JsonElement GetJsonArray(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            var rows = new List<Dictionary<string, object>>();
+
+            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
+
+            using (var command = GetCommand())
             {
-                if (openreader.IsDBNull(i) && Options.JsonNullValueHandling == JsonNullValueMode.Exclude)
+                command.CommandText = sqlstmt;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+                else
+                    command.CommandType = CommandType.Text;
+
+                AddCommandParameters(parameters, command);
+
+                var reader = command.ExecuteReader();
+
+
+                while (reader.Read())
+                {
+                    var row = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+
+                    rows.Add(row);
+                }
+
+                reader.Close();
+                reader.Dispose();
+
+            }
+
+
+            var json = JsonSerializer.Serialize(rows);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public virtual JsonElement GetJsonArray(string tablename)
+        {
+            return GetJsonArray("select * from " + tablename, false);
+        }
+
+        public virtual async Task<JsonElement> GetJsonArrayAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            var rows = new List<Dictionary<string, object>>();
+
+            var sqlstmt = GetSqlBuilder().GetModifiedSelectStatement(sql);
+
+            using (var command = await GetCommandAsync())
+            {
+                command.CommandText = sqlstmt;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+                else
+                    command.CommandType = CommandType.Text;
+
+                AddCommandParameters(parameters, command);
+
+                var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var row = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+
+                    rows.Add(row);
+                }
+
+                reader.Close();
+                reader.Dispose();
+
+            }
+
+
+            var json = JsonSerializer.Serialize(rows);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public virtual async Task<JsonElement> GetJsonArrayAsync(string tablename)
+        {
+            return await GetJsonArrayAsync("select * from " + tablename, false);
+        }
+
+        public int InsertEntity(IBasicDbTable model, JsonElement data)
+        {
+
+            if (model == null)
+                return -1;
+
+
+            var parameters = new List<IIntwentySqlParameter>();
+            List<IIntwentySqlParameter> dynamicparams = new List<IIntwentySqlParameter>();
+
+            var sql_insert = new StringBuilder();
+            var sql_insert_value = new StringBuilder();
+            sql_insert.Append("INSERT INTO " + model.DbTableName + " (");
+            sql_insert_value.Append(" VALUES (");
+            char sep = ' ';
+
+
+            foreach (var t in data.EnumerateObject())
+            {
+
+                var modelcolumn = model.DataColumns.Find(p => p.DbColumnName.ToLower() == t.Name.ToLower());
+                if (modelcolumn == null)
                     continue;
 
-                if (openreader.IsDBNull(i))
+                if (modelcolumn.IsPrimaryKey && modelcolumn.IsAutoIncremental)
+                    continue;
+
+                sql_insert.Append(sep + modelcolumn.DbColumnName);
+
+                if (t.Value.ValueKind == JsonValueKind.Null || t.Value.ValueKind == JsonValueKind.Undefined)
                 {
-                    result.Add(openreader.GetName(i), null);
+                    sql_insert_value.Append(sep + modelcolumn.DbColumnName + "=null");
                 }
                 else
                 {
-                    result.Add(openreader.GetName(i), openreader.GetValue(i));
+                    sql_insert_value.Append(sep + "@" + modelcolumn.DbColumnName);
+                    if (modelcolumn.DataType == IntwentyDataType.Text || modelcolumn.DataType == IntwentyDataType.String)
+                    {
+                        var val = t.Value.GetString();
+                        if (!string.IsNullOrEmpty(val))
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                        else
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, DBNull.Value));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Int)
+                    {
+                        var val = t.Value.GetInt32();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Bool)
+                    {
+                        var val = t.Value.GetBoolean();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.DateTime)
+                    {
+                        var val = t.Value.GetDateTime();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else
+                    {
+                        var val = t.Value.GetDecimal();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
                 }
+                sep = ',';
             }
 
-            return result;
+            sql_insert.Append(")");
+            sql_insert_value.Append(")");
+            sql_insert.Append(sql_insert_value);
+
+
+            parameters.AddRange(dynamicparams);
+
+
+            RunCommand(sql_insert.ToString(), parameters: parameters.ToArray());
+            if (Database == DBMS.MSSqlServer && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+            {
+                return Convert.ToInt32(GetScalarValue("SELECT @@IDENTITY"));
+            }
+
+            if (Database == DBMS.SQLite && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+            {
+                return Convert.ToInt32(GetScalarValue("SELECT Last_Insert_Rowid()"));
+            }
+
+            if (Database == DBMS.PostgreSQL && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+            {
+                return Convert.ToInt32(GetScalarValue(string.Format("SELECT currval('{0}')", model.DbTableName.ToLower() + "_id_seq")));
+            }
+
+            if ((Database == DBMS.MariaDB || Database == DBMS.MySql) && model.PrimaryKeyColumn.IsAutoIncremental && model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+            {
+                return Convert.ToInt32(GetScalarValue("SELECT LAST_INSERT_ID()"));
+            }
+
+            return -1;
+        }
+
+        public async Task<int> InsertEntityAsync(IBasicDbTable model, JsonElement data)
+        {
+            if (model == null)
+                return -1;
+
+
+            var parameters = new List<IIntwentySqlParameter>();
+            List<IIntwentySqlParameter> dynamicparams = new List<IIntwentySqlParameter>();
+
+            var sql_insert = new StringBuilder();
+            var sql_insert_value = new StringBuilder();
+            sql_insert.Append("INSERT INTO " + model.DbTableName + " (");
+            sql_insert_value.Append(" VALUES (");
+            char sep = ' ';
+
+
+            foreach (var t in data.EnumerateObject())
+            {
+
+                var modelcolumn = model.DataColumns.Find(p => p.DbColumnName.ToLower() == t.Name.ToLower());
+                if (modelcolumn == null)
+                    continue;
+
+                if (modelcolumn.IsPrimaryKey && modelcolumn.IsAutoIncremental)
+                    continue;
+
+                sql_insert.Append(sep + modelcolumn.DbColumnName);
+
+                if (t.Value.ValueKind == JsonValueKind.Null || t.Value.ValueKind == JsonValueKind.Undefined)
+                {
+                    sql_insert_value.Append(sep + modelcolumn.DbColumnName + "=null");
+                }
+                else
+                {
+                    sql_insert_value.Append(sep + "@" + modelcolumn.DbColumnName);
+                    if (modelcolumn.DataType == IntwentyDataType.Text || modelcolumn.DataType == IntwentyDataType.String)
+                    {
+                        var val = t.Value.GetString();
+                        if (!string.IsNullOrEmpty(val))
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                        else
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, DBNull.Value));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Int)
+                    {
+                        var val = t.Value.GetInt32();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Bool)
+                    {
+                        var val = t.Value.GetBoolean();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.DateTime)
+                    {
+                        var val = t.Value.GetDateTime();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else
+                    {
+                        var val = t.Value.GetDecimal();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                }
+                sep = ',';
+            }
+
+            sql_insert.Append(")");
+            sql_insert_value.Append(")");
+            sql_insert.Append(sql_insert_value);
+
+
+            parameters.AddRange(dynamicparams);
+
+
+            await RunCommandAsync(sql_insert.ToString(), parameters: parameters.ToArray());
+            if (Database == DBMS.MSSqlServer)
+            {
+                return Convert.ToInt32(await GetScalarValueAsync("SELECT @@IDENTITY"));
+            }
+
+            if (Database == DBMS.SQLite)
+            {
+                return Convert.ToInt32(await GetScalarValueAsync("SELECT Last_Insert_Rowid()"));
+            }
+
+            if (Database == DBMS.PostgreSQL)
+            {
+                return Convert.ToInt32(await GetScalarValueAsync(string.Format("SELECT currval('{0}')", model.DbTableName.ToLower() + "_id_seq")));
+            }
+
+            if (Database == DBMS.MariaDB || Database == DBMS.MySql)
+            {
+                return Convert.ToInt32(await GetScalarValueAsync("SELECT LAST_INSERT_ID()"));
+            }
+
+            return -1;
+        }
+
+        public virtual bool UpdateEntity(IBasicDbTable model, JsonElement data)
+        {
+
+            if (model == null)
+                return false;
+
+
+            List<IIntwentySqlParameter> dynamicparams = new List<IIntwentySqlParameter>();
+
+            StringBuilder sql_update = new StringBuilder();
+            sql_update.Append("UPDATE " + model.DbTableName + " SET ");
+            var sep = ' ';
+            JsonProperty pk=default;
+
+            foreach (var t in data.EnumerateObject())
+            {
+                var modelcolumn = model.DataColumns.Find(p => p.DbColumnName.ToLower() == t.Name.ToLower());
+                if (modelcolumn == null)
+                    continue;
+
+
+                if (t.Value.ValueKind == JsonValueKind.Null || t.Value.ValueKind == JsonValueKind.Undefined)
+                {
+                    sql_update.Append(sep + modelcolumn.DbColumnName + "=null");
+                }
+                else
+                {
+                    if (modelcolumn.IsPrimaryKey)
+                    {
+                        pk = t;
+                        continue;
+                    }
+
+                    sql_update.Append(sep + modelcolumn.DbColumnName + "=@" + modelcolumn.DbColumnName);
+                    if (modelcolumn.DataType == IntwentyDataType.Text || modelcolumn.DataType == IntwentyDataType.String)
+                    {
+                        var val = t.Value.GetString();
+                        if (!string.IsNullOrEmpty(val))
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                        else
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, DBNull.Value));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Int)
+                    {
+                        var val = t.Value.GetInt32();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Bool)
+                    {
+                        var val = t.Value.GetBoolean();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.DateTime)
+                    {
+                        var val = t.Value.GetDateTime();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else
+                    {
+                        var val = t.Value.GetDecimal();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                }
+                sep = ',';
+
+            }
+
+            sql_update.Append(" WHERE " + model.PrimaryKeyColumn.DbColumnName + "=@" + model.PrimaryKeyColumn.DbColumnName);
+
+            var parameters = new List<IIntwentySqlParameter>();
+            if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                parameters.Add(new IntwentySqlParameter("@" + model.PrimaryKeyColumn.DbColumnName, pk.Value.GetInt32()));
+            else
+                parameters.Add(new IntwentySqlParameter("@" + model.PrimaryKeyColumn.DbColumnName, pk.Value.GetString()));
+
+            parameters.AddRange(dynamicparams);
+
+            RunCommand(sql_update.ToString(), parameters: parameters.ToArray());
+
+            return true;
+
 
         }
 
+        public async Task<bool> UpdateEntityAsync(IBasicDbTable model, JsonElement data)
+        {
+            if (model == null)
+                return false;
 
 
+            List<IIntwentySqlParameter> dynamicparams = new List<IIntwentySqlParameter>();
 
+            StringBuilder sql_update = new StringBuilder();
+            sql_update.Append("UPDATE " + model.DbTableName + " SET ");
+            var sep = ' ';
+            JsonProperty pk = default;
+
+            foreach (var t in data.EnumerateObject())
+            {
+                var modelcolumn = model.DataColumns.Find(p => p.DbColumnName.ToLower() == t.Name.ToLower());
+                if (modelcolumn == null)
+                    continue;
+
+
+                if (t.Value.ValueKind == JsonValueKind.Null || t.Value.ValueKind == JsonValueKind.Undefined)
+                {
+                    sql_update.Append(sep + modelcolumn.DbColumnName + "=null");
+                }
+                else
+                {
+                    if (modelcolumn.IsPrimaryKey)
+                        pk = t;
+
+                    sql_update.Append(sep + modelcolumn.DbColumnName + "=@" + modelcolumn.DbColumnName);
+                    if (modelcolumn.DataType == IntwentyDataType.Text || modelcolumn.DataType == IntwentyDataType.String)
+                    {
+                        var val = t.Value.GetString();
+                        if (!string.IsNullOrEmpty(val))
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                        else
+                            dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, DBNull.Value));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Int)
+                    {
+                        var val = t.Value.GetInt32();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.Bool)
+                    {
+                        var val = t.Value.GetBoolean();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else if (modelcolumn.DataType == IntwentyDataType.DateTime)
+                    {
+                        var val = t.Value.GetDateTime();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                    else
+                    {
+                        var val = t.Value.GetDecimal();
+                        dynamicparams.Add(new IntwentySqlParameter("@" + modelcolumn.DbColumnName, val));
+                    }
+                }
+                sep = ',';
+
+            }
+
+            sql_update.Append(" WHERE " + model.PrimaryKeyColumn.DbColumnName + "=@" + model.PrimaryKeyColumn.DbColumnName);
+
+            var parameters = new List<IIntwentySqlParameter>();
+            if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                parameters.Add(new IntwentySqlParameter("@" + model.PrimaryKeyColumn.DbColumnName, pk.Value.GetInt32()));
+            else
+                parameters.Add(new IntwentySqlParameter("@" + model.PrimaryKeyColumn.DbColumnName, pk.Value.GetString()));
+
+            parameters.AddRange(dynamicparams);
+
+            await RunCommandAsync(sql_update.ToString(), parameters: parameters.ToArray());
+
+            return true;
+        }
+
+       
+
+        public virtual JsonElement GetEntity(IBasicDbTable model, string id)
+        {
+            return GetJsonEntityById(model, id);
+        }
+
+        public Task<JsonElement> GetEntityAsync(IBasicDbTable model, string id)
+        {
+            return GetJsonEntityByIdAsync(model, id);
+        }
+
+        public JsonElement GetEntity(IBasicDbTable model, int id)
+        {
+            return GetJsonEntityById(model, id);
+        }
+
+        public Task<JsonElement> GetEntityAsync(IBasicDbTable model, int id)
+        {
+            return GetJsonEntityByIdAsync(model,id);
+        }
+
+        private JsonElement GetJsonEntityById(IBasicDbTable model, object id)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (model.PrimaryKeyColumn == null)
+                throw new InvalidOperationException("No primary key column found");
+
+
+            using (var command = GetCommand())
+            {
+                command.CommandText = string.Format("SELECT * FROM {0} WHERE {1}=@P1", model.DbTableName, model.PrimaryKeyColumn.DbColumnName);
+                command.CommandType = CommandType.Text;
+
+                if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToInt32(id)) { DataType= DbType.Int32} }, command);
+                else 
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToString(id)) { DataType = DbType.String } }, command);
+
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        private async Task<JsonElement> GetJsonEntityByIdAsync(IBasicDbTable model, object id)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (model.PrimaryKeyColumn == null)
+                throw new InvalidOperationException("No primary key column found");
+
+
+            using (var command = await GetCommandAsync())
+            {
+                command.CommandText = string.Format("SELECT * FROM {0} WHERE {1}=@P1", model.DbTableName, model.PrimaryKeyColumn.DbColumnName);
+                command.CommandType = CommandType.Text;
+
+                if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToInt32(id)) { DataType = DbType.Int32 } }, command);
+                else
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToString(id)) { DataType = DbType.String } }, command);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public JsonElement GetEntity(string sql, bool isprocedure)
+        {
+            var row = new Dictionary<string, object>();
+
+      
+            using (var command = GetCommand())
+            {
+                command.CommandText = sql;
+                command.CommandType = CommandType.Text;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public async Task<JsonElement> GetEntityAsync(string sql, bool isprocedure)
+        {
+            var row = new Dictionary<string, object>();
+
+
+            using (var command = await GetCommandAsync())
+            {
+                command.CommandText = sql;
+                command.CommandType = CommandType.Text;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public JsonElement GetEntity(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            var row = new Dictionary<string, object>();
+
+
+            using (var command = GetCommand())
+            {
+                command.CommandText = sql;
+                command.CommandType = CommandType.Text;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+
+                AddCommandParameters(parameters, command);
+
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public async Task<JsonElement> GetEntityAsync(string sql, bool isprocedure, IIntwentySqlParameter[] parameters = null)
+        {
+            var row = new Dictionary<string, object>();
+
+
+            using (var command = await GetCommandAsync())
+            {
+                command.CommandText = sql;
+                command.CommandType = CommandType.Text;
+                if (isprocedure)
+                    command.CommandType = CommandType.StoredProcedure;
+
+                AddCommandParameters(parameters, command);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        object value = reader.GetValue(i);
+                        string columnName = reader.GetName(i);
+                        row[columnName] = value is DBNull ? null : value;
+                    }
+                    break;
+                }
+
+                reader.Close();
+                reader.Dispose();
+            }
+
+            var json = JsonSerializer.Serialize(row);
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+
+        public bool DeleteEntity(IBasicDbTable model, int id)
+        {
+            return DeleteEntityById(model, id);
+        }
+
+        public Task<bool> DeleteEntityAsync(IBasicDbTable model, int id)
+        {
+            return DeleteEntityByIdAsync(model, id);
+        }
+        public bool DeleteEntity(IBasicDbTable model, string id)
+        {
+           return DeleteEntityById(model, id);
+        }
+
+        public Task<bool> DeleteEntityAsync(IBasicDbTable model, string id)
+        {
+            return DeleteEntityByIdAsync(model, id);
+        }
+
+        private bool DeleteEntityById(IBasicDbTable model, object id)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (model.PrimaryKeyColumn == null)
+                throw new InvalidOperationException("No primary key column found");
+
+
+            using (var command = GetCommand())
+            {
+                command.CommandText = string.Format("DELETE FROM {0} WHERE {1}=@P1", model.DbTableName, model.PrimaryKeyColumn.DbColumnName);
+                command.CommandType = CommandType.Text;
+
+                if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToInt32(id)) { DataType = DbType.Int32 } }, command);
+                else
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToString(id)) { DataType = DbType.String } }, command);
+
+                command.ExecuteNonQuery();
+
+            }
+
+            return true;
+        }
+
+        private async Task<bool> DeleteEntityByIdAsync(IBasicDbTable model, object id)
+        {
+            var row = new Dictionary<string, object>();
+
+            if (model.PrimaryKeyColumn == null)
+                throw new InvalidOperationException("No primary key column found");
+
+
+            using (var command = await GetCommandAsync())
+            {
+                command.CommandText = string.Format("DELETE FROM {0} WHERE {1}=@P1", model.DbTableName, model.PrimaryKeyColumn.DbColumnName);
+                command.CommandType = CommandType.Text;
+
+                if (model.PrimaryKeyColumn.DataType == IntwentyDataType.Int)
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToInt32(id)) { DataType = DbType.Int32 } }, command);
+                else
+                    AddCommandParameters(new IIntwentySqlParameter[] { new IntwentySqlParameter("@P1", Convert.ToString(id)) { DataType = DbType.String } }, command);
+
+                await command.ExecuteNonQueryAsync();
+
+            }
+
+            return true;
+        }
 
 
     }

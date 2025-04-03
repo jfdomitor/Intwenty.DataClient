@@ -127,7 +127,7 @@ namespace Intwenty.DataClient.Databases.SqlServer
             return new SqlServerBuilder();
         }
 
-        protected override void SetPropertyValues<T>(IDataReader reader, KeyValuePair<int,IntwentyDbColumnDefinition> column, T instance)
+        protected override void SetPropertyValues<T>(IDataReader reader, KeyValuePair<int,DbColumnDefinition> column, T instance)
         {
             if (column.Value.IsInt32)
                 column.Value.Property.SetValue(instance, reader.GetInt32(column.Key), null);
@@ -145,7 +145,7 @@ namespace Intwenty.DataClient.Databases.SqlServer
           
         }
 
-        protected override void InferAutoIncrementalValue<T>(IntwentyDbTableDefinition model, List<IntwentySqlParameter> parameters, T entity, IDbCommand command)
+        protected override void InferAutoIncrementalValue<T>(DbTableDefinition model, List<IntwentySqlParameter> parameters, T entity, IDbCommand command)
         {
             if (model == null)
                 return;
